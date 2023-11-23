@@ -48,5 +48,17 @@ impl HTTPRequest {
         }
         panic!("Request not valid");
     }
+
+    pub fn parse_path(&self) -> String {
+        // remove the /
+        let path: String = self.path.chars().skip(1).collect();
+
+        // we are accessing /
+        if path.len() < 1 {
+            return String::from("index.html");
+        }
+
+        return path;
+    }
 }
 

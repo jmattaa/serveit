@@ -3,6 +3,7 @@ pub mod response;
 pub mod utils;
 use request::HTTPRequest;
 use response::HTTPResponse;
+use std::fs;
 use std::io::prelude::*;
 use std::net::TcpListener;
 
@@ -31,14 +32,29 @@ impl Server {
             let req = HTTPRequest::parse(String::from_utf8(buf.to_vec()).
                                          unwrap().as_str());
 
+            let path: String = req.parse_path();
+            let contents: String = match fs::read_to_string(path) {
+                Ok(contents) => {
+                    contents
+                },
+                Err(err) => {
+                    // give 'em an invalid response
+                    // ain't the best way i guess but works for now
+                    _stream.write("invalid response".as_bytes()).unwrap();
+
+                    String::new()
+                },
+            };
+
             let res = HTTPResponse::new(
-                "HTTP/1.1".to_owned(),
+                req.version().to_owned(),
                 "200 OK".to_owned(),
-                "text/plain".to_owned(),
-                String::new(),
+                "text/html".to_owned(),
+                contents
             );
 
-            println!("{}", res.construct());
+            _stream.write(res.construct().as_bytes()).unwrap();
+            _stream.flush().unwrap();
         }
     }
 }
