@@ -37,10 +37,16 @@ impl Server {
                 Ok(contents) => {
                     contents
                 },
-                Err(err) => {
+                Err(_) => {
                     // give 'em an invalid response
                     // ain't the best way i guess but works for now
-                    _stream.write("invalid response".as_bytes()).unwrap();
+                    _stream.write(HTTPResponse::new(
+                            req.version().to_owned(),
+                            "404 NOT FOUND".to_owned(),
+                            "text/html".to_owned(),
+                            utils::HTML404PAGE.to_owned()
+                            ).construct().as_bytes()
+                        ).unwrap();
 
                     String::new()
                 },
